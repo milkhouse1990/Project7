@@ -1,0 +1,12 @@
+up=17
+down=31
+left=30
+right=32
+a=38
+b=37
+x=24
+y=36
+l=22
+r=23
+select=2
+start=3
