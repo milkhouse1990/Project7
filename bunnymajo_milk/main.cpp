@@ -33,7 +33,6 @@ using namespace std;
 const int xscreen = 320, yscreen = 180;
 const int tile = 16;
 
-
 //全局变量声明
 
 HINSTANCE hInst;
@@ -68,14 +67,10 @@ list<npc>::iterator lni;
 list<gimmick>gimmick_list;
 list<gimmick>::iterator lgi;
 
-
 int rows, cols;
-
-
 
 //keyconfig
 int BUTTON_UP, BUTTON_DOWN, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_A, BUTTON_B, BUTTON_X, BUTTON_Y, BUTTON_L, BUTTON_R, BUTTON_SELECT, BUTTON_START;
-
 
 //input
 LPDIRECTINPUTDEVICE8 g_pKeyboardDevice = NULL;
@@ -94,15 +89,13 @@ int scene = 3;
 //menu
 menu stage_select(8*tile,6*tile,5);
 
-
-
 //全局函数声明  
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+void				input();
 void				update();
 void                paint();
-
 
 bool WallCheck(int x, int y);
 void LoadMap(HDC hdc,HDC bufdc,HDC mapdc);
@@ -188,7 +181,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	{
 		return FALSE;
 	}
-	tStart = GetTickCount64();
 
 	//消息循环  
 	GetMessage(&msg, NULL, NULL, NULL);            //初始化msg      
@@ -201,17 +193,13 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		}
 		else
 		{
-			//const float constFps = 30.0f;                 //定义帧数
-			//DWORD timeInPerFrame = 1000.0f / FPS;    //计算每帧的频率
-			           //循环开始的时间
+			input();
 			update();
 			paint();
-			while (timeGetTime() - timeBegin < 31)
+			while (timeGetTime() - timeBegin < 15)
 			{
-				
 			}
 			timeBegin = timeGetTime();
-				
 		}
 	}
 	g_pKeyboardDevice->Unacquire();
@@ -291,9 +279,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	SetBkMode(mdc, TRANSPARENT);    //设置TextOut背景透明 
 
-
 	//act = true;
-
+	input();
 	update();
 	paint();
 	//ReleaseDC(hWnd, hdc);
@@ -308,24 +295,14 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	return TRUE;
 }
 
-//****自定义绘图函数*********************************  
-// 1.画面贴图与对战消息显示  
-// 2.怪物行为判断及各项数据处理与计算  
-void update()
+
+void input()
 {
 
 	//贴上背景图  
 	SelectObject(bufdc, bg);
 	BitBlt(mdc, 0, 0, xscreen, yscreen, bufdc, 0, 0, SRCCOPY);
-
-
-
-	char str[100];
-
-
-
-
-
+	
 	//-----------------------------------------INPUT PROCESS------------------------------
 	//input read
 	Device_Read(g_pKeyboardDevice, didod, &dwElements, g_pKeyStateBuffer);
@@ -346,7 +323,6 @@ void update()
 							milk.sprite.change("rabbit");
 							trans_finish = true;
 						}
-
 					}
 					else if (didod[i].dwOfs == BUTTON_Y)
 					{
@@ -490,12 +466,7 @@ void update()
 						}
 					}
 				}
-
-
-
 			}
-
-
 		}
 		else
 		{
@@ -519,13 +490,7 @@ void update()
 						scene = stage_select.index + 1;
 						LoadMap(mdc, bufdc, mapdc);
 					}
-
-
-
-
-
 			}
-
 			else
 			{
 				//next page
@@ -535,11 +500,8 @@ void update()
 						avg.pause = false;
 						avg.err = false;
 						//avg.nextpage();
-
-
 					}
 			}
-
 		}
 	}
 	//pressing control
@@ -561,8 +523,6 @@ void update()
 			transform = false;
 			trans_finish = false;
 		}
-
-
 		if (transform)
 		{
 			//transform control
@@ -593,11 +553,9 @@ void update()
 						if (lgi->solid)
 							if (milk.sprite.damage_check(lgi->sprite))
 								lgi->put_right(&milk);
-
 					}
 					//milk.name = "rabbit2";
 				}
-
 			}
 			else if (g_pKeyStateBuffer[BUTTON_RIGHT] & 0x80)
 			{
@@ -614,16 +572,19 @@ void update()
 						if (lgi->solid)
 							if (milk.sprite.damage_check(lgi->sprite))
 								lgi->put_left(&milk);
-
 					}
-
-					//milk.name = "rabbit2";
 				}
-
 			}
 			//else
-				//milk.name = "rabbit";
+			//milk.name = "rabbit";
 		}
+	}
+}
+
+void update()
+{
+	if (act)
+	{
 		if (transform)
 		{
 
@@ -797,10 +758,6 @@ void update()
 
 
 		}
-
-
-
-
 	}
 	else
 	{
@@ -853,7 +810,6 @@ void paint()
 				image.Destroy();
 			}
 		}
-
 	}
 	//enemy draw
 	for (lei = enemy_list.begin(); lei != enemy_list.end(); ++lei)
@@ -862,13 +818,9 @@ void paint()
 	}
 	
 	//milk draw
-	
-	
 	if (scene>0)
-	if (!(milk.invincible % 2))
-		milk.draw(mdc, xview, 0);
-
-	//BitBlt(hdc, 0, 0, xscreen, yscreen, mdc, 0, 0, SRCCOPY);
+		if (!(milk.invincible % 2))
+			milk.draw(mdc, xview, 0);
 	
 	//milk bullet
 	for (loi = milk_listobj.begin(); loi != milk_listobj.end(); ++loi)
@@ -889,7 +841,6 @@ void paint()
 					static animation a_button(milk.sprite.get_gx(), milk.sprite.get_gy(),"a",10,2);
 					a_button.draw(mdc);
 				}
-
 			}
 	}
 	//frontground draw
@@ -928,7 +879,6 @@ void paint()
 		image.Draw(mdc, 0, yscreen-tile*4 - i, 8*j, i, 8*j, 65*j -1- i+j, 8*j, i);
 		image.Destroy();
 
-
 		//sprintf_s(str, "%d / %d", milk.nHp, milk.mHp);
 		//TextOut(mdc, 0, 0, str, strlen(str));
 		//boss hp
@@ -953,7 +903,6 @@ void paint()
 				{
 					i = i * j * 2;
 					image.Draw(mdc, xscreen - tile, yscreen - tile * 4 - i, 8 * j, i, 8 * j, 65 * j - 1 - i + j, 8 * j, i);
-
 				}
 			}
 			else
@@ -968,15 +917,11 @@ void paint()
 		{
 			avg.draw(mdc, xview, 0);
 		}
-		
 	}
 	if (scene>0)
 	//map
 	//SelectObject(mapdc, fullmap);
 		BitBlt(mdc, 0, 0, xscreen, yscreen, mapdc, xview, 0, SRCAND);
-	
-	
-
 	
 	//FPS
 	float fp = GetFPS();
@@ -985,10 +930,7 @@ void paint()
 	//display
 	//SelectObject(mdc, bmp);
 	StretchBlt(hdc, 0, 0, xscreen*2, yscreen*2, mdc, 0, 0, xscreen, yscreen, SRCCOPY);
-	
-}
-
-
+	}
 
 bool WallCheck(int x, int y)
 {
@@ -1178,12 +1120,6 @@ void LoadMap(HDC hdc,HDC bufdc,HDC mapdc)
 		}
 	}
 	
-		
-
-	
-
-	
-
 	//object配置
 
 	milk_listobj.clear();
@@ -1321,9 +1257,5 @@ void LoadMap(HDC hdc,HDC bufdc,HDC mapdc)
 		milk.sprite.y = 0;
 		//camera reset
 		xview = 0;
-	}
-	
-	
-
-	
+	}	
 }

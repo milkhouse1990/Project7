@@ -9,7 +9,7 @@ public:
 	//location
 	int x;
 	int y;
-	//CImage image;
+	CImage image;
 
 	CString name;
 	int xsize;
