@@ -32,6 +32,8 @@ using namespace std;
 
 const int xscreen = 320, yscreen = 180;
 const int tile = 16;
+const int FPS = 60;
+CString resdir = "Res180p";
 
 //全局变量声明
 
@@ -66,6 +68,9 @@ list<npc>::iterator lni;
 
 list<gimmick>gimmick_list;
 list<gimmick>::iterator lgi;
+
+list<menu>menu_list;
+list<menu>::iterator lmi;
 
 int rows, cols;
 
@@ -144,7 +149,7 @@ BOOL Device_Read(IDirectInputDevice8 *pDIDevice, DIDEVICEOBJECTDATA *didod,DWORD
 		if (didod2[i].dwOfs == DIK_J)
 			if (didod2[i].dwData & 0x80)
 			{
-				object *new_bullet = new object(1, milk.sprite.x, milk.sprite.y, 10, 0, "bullet", 64);
+				object *new_bullet = new object(1, milk.x, milk.y, 10, 0, "bullet", 64);
 				milk_listobj.push_back(*new_bullet);
 			}
 	}*/
@@ -196,7 +201,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 			input();
 			update();
 			paint();
-			while (timeGetTime() - timeBegin < 15)
+			while (timeGetTime() - timeBegin < 16)
 			{
 			}
 			timeBegin = timeGetTime();
@@ -320,7 +325,7 @@ void input()
 						if (milk.costume > 0 && milk.costume < 5)
 						{
 							milk.costume = 0;
-							milk.sprite.change("rabbit");
+							milk.change("rabbit");
 							trans_finish = true;
 						}
 					}
@@ -330,9 +335,9 @@ void input()
 						{
 							if (!transform)
 							{
-								manimation a_new_bullet(milk.sprite.get_gx() + 1, milk.sprite.get_gy() + 1, "bullet");
-								object new_bullet(1, 10 - 20 * milk.sprite.left, 0, a_new_bullet);
-								new_bullet.sprite.left = milk.sprite.left;
+								manimation a_new_bullet(milk.get_gx() + 1, milk.get_gy() + 1, "bullet");
+								a_new_bullet.left = milk.left;
+								object new_bullet(1, 10 - 20 * milk.left, 0, a_new_bullet);
 								milk_listobj.push_back(new_bullet);
 							}
 						}
@@ -359,11 +364,9 @@ void input()
 						{
 							if (milk.motion == 2)
 							{
-								milk.costume = 5;
-								milk.speed = 15;
-								milk.motion = 0;
-								milk.sprite.mchange("milk_bunny", 0, 1, 4, tile, 0.5*tile);
-								manimation a_clothes(milk.sprite.get_gx(), milk.sprite.get_gy(), "bra");
+								milk.costume_change(5);
+								manimation a_clothes(0, milk.get_gy(), "bra");
+								a_clothes.x = milk.x;
 								gimmick clothes(0, a_clothes);
 								gimmick_list.push_back(clothes);
 							}
@@ -374,19 +377,17 @@ void input()
 								{
 									if (lgi->id == 0)
 									{
-										if (milk.sprite.damage_check(lgi->sprite))
+										if (milk.damage_check((manimation)*lgi))
 										{
-											if (WallCheck(milk.sprite.get_left_border() + milk.sprite.ubox, milk.sprite.y - milk.sprite.hbox) || WallCheck(milk.sprite.x - milk.sprite.xsize / 2 + milk.sprite.wbox, milk.sprite.y - milk.sprite.hbox))
-												break;
+											if (WallCheck(milk.get_left_border() + milk.ubox, milk.y - milk.hbox) || WallCheck(milk.get_left_border() - 1 + milk.wbox, milk.y - milk.hbox))
+											{
+
+											}
 											else
 											{
-												milk.costume = 0;
-												milk.speed = 10;
-												milk.motion = 0;
-												milk.sprite.mchange("rabbit", 0, 1, 4, tile, 2 * tile);
+												milk.costume_change(0);
 												lgi = gimmick_list.erase(lgi);
 											}
-											break;
 										}
 										break;
 									}
@@ -403,7 +404,7 @@ void input()
 							//npc check
 							for (lni = npc_listnpc.begin(); lni != npc_listnpc.end(); ++lni)
 							{
-								if (milk.sprite.damage_check(lni->sprite))
+								if (milk.damage_check((manimation)*lni))
 								{
 									act = false;
 									CString title;
@@ -415,8 +416,7 @@ void input()
 						}
 						else
 						{
-							milk.costume = 1;
-							milk.sprite.change("milk_maid");
+							milk.costume_change(1);
 							trans_finish = true;
 						}
 					}
@@ -432,19 +432,19 @@ void input()
 							if (milk.ground_check())
 								if (milk.costume != 5)
 							{
-									if (milk.sprite.left)
+									if (milk.left)
 									{
 										if (!milk.left_wall_check(tile))
 										{
 											milk.motion = 2;
-											milk.sprite.mchange("milk_down", 0, 1, -0.5*tile, 2 * tile, tile);
+											milk.mchange("milk_down", 0, 1, -0.5*tile, 2 * tile, tile);
 										}
 									}
 									else
 										if (!milk.right_wall_check(tile))
 										{
 											milk.motion = 2;
-											milk.sprite.mchange("milk_down", 0, 1, -0.5*tile, 2 * tile, tile);
+											milk.mchange("milk_down", 0, 1, -0.5*tile, 2 * tile, tile);
 										}
 							}
 						}
@@ -479,7 +479,7 @@ void input()
 							if (milk.costume != 5)
 							{
 								milk.motion = 0;
-								milk.sprite.mchange("rabbit", 0, 1, 0, tile, 2 * tile);
+								milk.mchange("rabbit", 0, 1, 0, tile, 2 * tile);
 							}
 						}
 					}
@@ -567,14 +567,14 @@ void input()
 				if (milk.motion != 2)
 				{
 					milk.turn_left(true);
-					milk.sprite.x -= milk.speed*tile/FPS;
+					milk.x -= milk.speed*tile/FPS;
 					while (milk.left_wall_check())
-						milk.sprite.x++;	
+						milk.x++;	
 
 					for (lgi = gimmick_list.begin(); lgi != gimmick_list.end(); lgi++)
 					{
 						if (lgi->solid)
-							if (milk.sprite.damage_check(lgi->sprite))
+							if (milk.damage_check((manimation)*lgi))
 								lgi->put_right(&milk);
 					}
 					//milk.name = "rabbit2";
@@ -585,14 +585,14 @@ void input()
 				if (milk.motion != 2)
 				{
 					milk.turn_left(false);
-					milk.sprite.x += milk.speed*tile/FPS;
+					milk.x += milk.speed*tile/FPS;
 					while (milk.right_wall_check())
-						milk.sprite.x--;			
+						milk.x--;			
 
 					for (lgi = gimmick_list.begin(); lgi != gimmick_list.end(); lgi++)
 					{
 						if (lgi->solid)
-							if (milk.sprite.damage_check(lgi->sprite))
+							if (milk.damage_check((manimation)*lgi))
 								lgi->put_left(&milk);
 					}
 				}
@@ -619,12 +619,12 @@ void update()
 				milk.invincible--;
 			//milk move
 			//milk fall
-			milk.sprite.y += milk.vy;
-			milk.vy += 36.0 * tile / FPS / FPS;
+			milk.physics();
+			
 			//地面检测
 			if (milk.ground_check())
 			{
-				milk.sprite.y = ((int)milk.sprite.y + 1) / tile * tile - 1;
+				milk.y = ((int)milk.y + 1) / tile * tile - 1;
 				milk.vy = 0;
 				milk.double_jump = false;
 			}
@@ -634,14 +634,14 @@ void update()
 			{
 				if (lgi->solid)
 				{
-					milk.sprite.y++;
-					if (lgi->sprite.damage_check(milk.sprite))
+					milk.y++;
+					if (lgi->damage_check(milk))
 					{
-						milk.sprite.y = lgi->sprite.y - lgi->sprite.hbox;
+						milk.y = lgi->y - lgi->hbox;
 						milk.vy = 0;
 					}
 					else
-						milk.sprite.y--;
+						milk.y--;
 					lgi->effect(&milk);
 				}
 			}
@@ -651,7 +651,7 @@ void update()
 			{
 				//milk bullet behavior
 				loi->motion();
-				if (loi->sprite.x<xview || loi->sprite.x>xview + xscreen)
+				if (loi->x<xview || loi->x>xview + xscreen)
 				{
 					loi = milk_listobj.erase(loi);
 					continue;
@@ -661,7 +661,7 @@ void update()
 				for (lei = enemy_list.begin(); lei != enemy_list.end();)
 				{
 					if (lei->id < 100)
-						if (lei->sprite.damage_check(loi->sprite))
+						if (lei->damage_check((manimation)*loi))
 						{
 							lei->nHp -= 1;
 							if (lei->nHp == 0)
@@ -683,12 +683,12 @@ void update()
 			//event check
 			for (levi = event_list.begin(); levi != event_list.end(); levi++)
 			{
-				if (milk.sprite.x >= levi->x-1 && milk.sprite.x <= levi->x + tile)
+				if (milk.x >= levi->x-1 && milk.x <= levi->x + tile)
 				{
 					switch (levi->id)
 					{
 					case 0:
-						milk.sprite.mchange("rabbit");
+						milk.mchange("rabbit");
 						boss_flag = false;
 						scene = 0;
 						LoadMap(hdc, bufdc, mapdc);
@@ -696,15 +696,13 @@ void update()
 					case 1:
 						if (milk.costume == 7)
 						{
-							milk.costume = 0;
-							milk.sprite.mchange("rabbit");
+							milk.costume_change(0);
 						}
 						break;
 					case 2:
 						if (milk.costume == 0)
 						{
-							milk.costume = 7;
-							milk.sprite.mchange("milk_bathtowel");
+							milk.costume_change(7);
 						}
 						break;
 					case 3:
@@ -728,7 +726,7 @@ void update()
 				lei->UseSkill(&enemy_list);
 				lei->update();
 				lei->motion();
-				if (lei->sprite.x<xview || lei->sprite.x>xview + xscreen)
+				if (lei->x<xview || lei->x>xview + xscreen)
 				{
 					lei = enemy_list.erase(lei);
 					continue;
@@ -737,7 +735,7 @@ void update()
 				//milk_damage_check
 				if (milk.invincible == 0)
 				{
-					if (milk.sprite.damage_check(lei->sprite))
+					if (milk.damage_check(*lei))
 					{
 						milk.nHp -= lei->atk;
 						if (milk.nHp <= 0)
@@ -747,7 +745,7 @@ void update()
 							LoadMap(hdc, bufdc, mapdc);
 							break;
 						}
-						milk.sprite.x -= 64 * (lei->sprite.x - milk.sprite.x >= 0 ? 1 : -1);
+						milk.x -= tile * (lei->x - milk.x >= 0 ? 1 : -1);
 						milk.invincible = 60;
 					}
 				}
@@ -757,13 +755,13 @@ void update()
 			//----------------------------------------------GIMMICK PHASE
 			for (lgi = gimmick_list.begin(); lgi != gimmick_list.end();)
 			{
-				if (lgi->sprite.x < 0)
+				if (lgi->x < 0)
 				{
 					lgi = gimmick_list.erase(lgi);
 					continue;
 				}
 				if (!lgi->solid)
-					if (milk.sprite.damage_check(lgi->sprite))
+					if (milk.damage_check(*lgi))
 					{
 						lgi->effect(&milk);
 						if (lgi->item)
@@ -773,18 +771,13 @@ void update()
 						}
 					}
 				lgi++;
-
 			}
-
-
 		}
 	}
 	else
 	{
 		if (!selector)
 			act = avg.step();
-		//act = false;//紧急处理
-		//act = avg.display(mdc);	
 	}
 }
 void paint()
@@ -794,22 +787,22 @@ void paint()
 	//camera
 	if (roll == 0)
 	{
-		if (milk.sprite.x - xview > xscreen / 2 && cols * tile - milk.sprite.x > xscreen / 2)
-			xview = milk.sprite.x - xscreen / 2;
-		if (milk.sprite.x - xview < xscreen / 2 && milk.sprite.x > xscreen / 2)
-			xview = milk.sprite.x - xscreen / 2;
+		if (milk.x - xview > xscreen / 2 && cols * tile - milk.x > xscreen / 2)
+			xview = milk.x - xscreen / 2;
+		if (milk.x - xview < xscreen / 2 && milk.x > xscreen / 2)
+			xview = milk.x - xscreen / 2;
 		//bounder check
-		if (milk.sprite.x < 0)
-			milk.sprite.x=0;
+		if (milk.x < 0)
+			milk.x=0;
 	}
 	
-	if (milk.sprite.y > yscreen)
+	if (milk.y > yscreen)
 	{
 		milk.die();
 		LoadMap(hdc, bufdc, mapdc);
 	}
 	if (roll==1)
-		if (milk.sprite.x < xview)
+		if (milk.x < xview)
 		{
 			milk.die();
 			LoadMap(hdc, bufdc, mapdc);
@@ -819,46 +812,45 @@ void paint()
 	//npc draw
 	for (lni = npc_listnpc.begin(); lni != npc_listnpc.end(); ++lni)
 	{
-		lni->draw(mdc,xview, 0);
+		lni->drawg(mdc,xview, 0);
 
-		if (milk.sprite.damage_check(lni->sprite))
+		if (milk.damage_check(*lni))
 		{
 			if (act)
 			{
-				image.Load(resdir+"\\up.png");
-				image.Draw(mdc, milk.sprite.x , milk.sprite.y - 4*tile, tile, tile, 0, 0, tile, tile);
-				image.Destroy();
+				animation a_up(0,0,"up");
+				a_up.draw(mdc, milk.x, milk.y - 4 * tile);
 			}
 		}
 	}
 	//enemy draw
 	for (lei = enemy_list.begin(); lei != enemy_list.end(); ++lei)
 	{
-		lei->draw(mdc, xview, 0);
+		lei->drawg(mdc, xview, 0);
 	}
 	
 	//milk draw
 	if (scene>0)
 		if (!(milk.invincible % 2))
-			milk.draw(mdc, xview, 0);
+			milk.drawg(mdc, xview, 0);
 	
 	//milk bullet
 	for (loi = milk_listobj.begin(); loi != milk_listobj.end(); ++loi)
 	{
-		loi->draw(mdc, xview, 0);
+		loi->drawg(mdc, xview, 0);
 	}
 	
 	//environment draw
 	for (lgi = gimmick_list.begin(); lgi != gimmick_list.end(); ++lgi)
 	{
-		lgi->draw(mdc, xview, 0);
+		lgi->drawg(mdc, xview, 0);
 
 		if (lgi->id == 0)
 			if (act)
 			{
-				if (milk.sprite.damage_check(lgi->sprite))
+				if (milk.damage_check(*lgi))
 				{
-					static animation a_button(milk.sprite.get_gx(), milk.sprite.get_gy(),"a",10,2);
+					static animation a_button(milk.get_gx(), milk.get_gy(),"a",10,2);
 					a_button.draw(mdc);
 				}
 			}
@@ -875,7 +867,7 @@ void paint()
 	if (transform)
 	{
 		static animation a_transform_select(0, 0, "transform_select", 10, 2);
-		a_transform_select.draw(mdc, milk.sprite.x - a_transform_select.xsize / 2 + 1, milk.sprite.y - milk.sprite.ysize / 2 - a_transform_select.ysize / 2 + 1);
+		a_transform_select.draw(mdc, milk.x - a_transform_select.xsize / 2 + 1, milk.y - milk.ysize / 2 - a_transform_select.ysize / 2 + 1);
 	}
 		
 	//UI
@@ -1066,11 +1058,11 @@ void LoadMap(HDC hdc,HDC bufdc,HDC mapdc)
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
 				0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
 				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -1270,8 +1262,9 @@ void LoadMap(HDC hdc,HDC bufdc,HDC mapdc)
 	{
 		//milk reset
 		milk.nHp = milk.mHp;
-		milk.sprite.x = 0;
-		milk.sprite.y = 0;
+		milk.x = 0;
+		milk.y = 0;
+		milk.costume = 0;
 		//camera reset
 		xview = 0;
 	}	

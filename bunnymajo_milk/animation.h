@@ -36,7 +36,6 @@ public:
 	//}
 	void draw(HDC mdc, int px,int py);
 	void draw(HDC mdc);
-	int get_gx();
 	int get_gy();
 	void change(CString p_name, int p_period = 0, int p_frames = 1);
 };

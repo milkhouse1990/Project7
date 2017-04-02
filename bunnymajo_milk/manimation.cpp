@@ -46,6 +46,11 @@ void manimation::mchange(CString p_name, int p_period, int p_frames, int p_xoffs
 	hbox = p_hbox;
 }
 
+int manimation::get_gx()
+{
+	int gx = get_left_border() / tile;
+	return gx;
+}
 int manimation::get_left_border()
 {
 	int dx = x - xoffset - xsize / 2 + 1 + ubox;

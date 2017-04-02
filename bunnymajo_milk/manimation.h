@@ -31,5 +31,6 @@ public:
 	void drawg(HDC mdc, int xview, int yview);
 	void mchange(CString p_name, int p_period=0, int p_frames=1);
 	void mchange(CString p_name, int p_period, int p_frames, int p_xoffset, int p_wbox, int p_hbox);
+	int get_gx();
 	int get_left_border();
 };

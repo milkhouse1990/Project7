@@ -40,12 +40,6 @@ void animation::draw(HDC mdc)
 	}
 }
 
-int animation::get_gx()
-{
-	int gx = (x - xsize / 2 + 1) / tile;
-	return gx;
-}
-
 int animation::get_gy()
 {
 	int gy = (y - ysize + 1) / tile;

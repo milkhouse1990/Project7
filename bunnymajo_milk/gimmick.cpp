@@ -6,18 +6,18 @@ void gimmick::effect(player *milk)
 	case 0:
 		break;
 	case 1:
-		sprite.x += vx;
-		if (sprite.damage_check(milk->sprite))
+		x += vx;
+		if (damage_check(*milk))
 			if (vx > 0)
 				put_right(milk);
 			else
 				put_left(milk);
 		else
 		{
-			milk->sprite.y++;
-			if (sprite.damage_check(milk->sprite))
-				milk->sprite.x += vx;
-			milk->sprite.y--;
+			milk->y++;
+			if (damage_check(*milk))
+				milk->x += vx;
+			milk->y--;
 		}
 		break;
 	case 2://auto recover
@@ -41,9 +41,9 @@ void gimmick::effect(player *milk)
 
 void gimmick::put_right(player *milk)
 {
-	milk->sprite.x = sprite.x -sprite.xsize/2+sprite.ubox+sprite.wbox-milk->sprite.ubox+milk->sprite.xsize / 2;
+	milk->x = x -xsize/2 + ubox + wbox - milk->ubox + milk->xsize / 2;
 }
 void gimmick::put_left(player *milk)
 {
-	milk->sprite.x = sprite.x - sprite.xsize / 2 -milk->sprite.wbox- milk->sprite.ubox + milk->sprite.xsize / 2;
+	milk->x = x - xsize / 2 -milk->wbox- milk->ubox + milk->xsize / 2;
 }

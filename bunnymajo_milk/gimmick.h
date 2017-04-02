@@ -1,7 +1,7 @@
 #pragma once
 #include "object.h"
 #include "player.h"
-#define FPS 60
+extern const int FPS;
 class gimmick : public object {
 public:
 	int id;//0:clothes 255:hp max up

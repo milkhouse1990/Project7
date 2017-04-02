@@ -42,7 +42,7 @@ void enemy::UseSkill(list<enemy>* enemy_list)
 	{
 		if (skill == 1)
 		{
-			manimation a_bullet(sprite.get_gx(),sprite.get_gy(),"bullet");
+			manimation a_bullet(get_gx(),get_gy(),"bullet");
 			enemy bullet(2, 1, -5, 0, a_bullet);
 			enemy_list->push_back(bullet);
 			skill = 0;
@@ -55,16 +55,16 @@ void enemy::UseSkill(list<enemy>* enemy_list)
 		switch (skill)
 		{
 		case 1:
-			sprite.y -= 0;
+			y -= 0;
 			break;
 		case 2:
-			sprite.y += 0;
+			y += 0;
 			break;
 		case 3:
-			sprite.x -= 1;
+			x -= 1;
 			break;
 		case 4:
-			sprite.x += 1;
+			x += 1;
 			break;
 		}
 		break;
