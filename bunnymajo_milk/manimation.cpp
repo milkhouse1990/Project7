@@ -3,8 +3,8 @@
 bool manimation::damage_check(manimation enemy)
 {
 	//milk:def enemy:atk
-	int pdx = x - xoffset -xsize / 2 + 1 + ubox;
-	int edx = enemy.x - enemy.xoffset -enemy.xsize / 2 + 1 + enemy.ubox;
+	int pdx = get_left_border();
+	int edx = enemy.get_left_border();
 	if (pdx <= edx + enemy.wbox - 1)
 		if (pdx + wbox - 1 >= edx )
 			if (y - vbox >= enemy.y - enemy.vbox - enemy.hbox + 1)
@@ -48,6 +48,6 @@ void manimation::mchange(CString p_name, int p_period, int p_frames, int p_xoffs
 
 int manimation::get_left_border()
 {
-	int dx = x - xsize / 2 + 1 + ubox;
-	return dx
+	int dx = x - xoffset - xsize / 2 + 1 + ubox;
+	return dx;
 }
