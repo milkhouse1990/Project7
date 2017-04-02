@@ -7,7 +7,7 @@ void object::motion()
 }
 void object::draw(HDC mdc,int xview,int yview)
 {
-	sprite.drawg(mdc, left, xview, yview);
+	sprite.drawg(mdc, xview, yview);
 }
 
 

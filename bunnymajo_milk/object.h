@@ -11,9 +11,8 @@ public:
 	//int x;
 	//int y;
 	int vx;
-	int vy;
+	double vy;
 	
-	bool left;
 	int invincible;
 
 	//for animation and collision check
@@ -28,8 +27,7 @@ public:
 		vx = p_vx;
 		vy = p_vy;
 		invincible = 0;
-		left = false;
-		
+				
 	}
 //private:
 	void motion();

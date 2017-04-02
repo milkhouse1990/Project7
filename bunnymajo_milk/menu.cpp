@@ -18,7 +18,7 @@ void menu::draw(HDC mdc)
 {
 	CString str;
 	CString str2;
-	HFONT efont = CreateFont(13,                                                  //   nHeight  
+	/*HFONT efont = CreateFont(13,                                                  //   nHeight  
 		8,                                                   //   nWidth  
 		0,                                                   //   nEscapement
 		0,                                                   //   nOrientation  
@@ -32,7 +32,7 @@ void menu::draw(HDC mdc)
 		DEFAULT_QUALITY,                       //   nQuality  
 		DEFAULT_PITCH | FF_SWISS,     //   nPitchAndFamily     
 		_T("ËÎÌו"));
-	SelectObject(mdc, efont);
+	SelectObject(mdc, efont);*/
 	for (int i = 0; i < items; i++)
 	{
 		switch(i)

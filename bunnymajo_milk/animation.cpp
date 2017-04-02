@@ -1,6 +1,6 @@
 #include "animation.h"
 
-void animation::draw(HDC mdc, int px, int py, bool left)
+void animation::draw(HDC mdc, int px, int py)
 {
 	
 	if (left)
@@ -59,7 +59,9 @@ void animation::change(CString p_name, int p_period, int p_frames)
 	frame = 0;
 	period = p_period;
 	frames = p_frames;
+	left = false;
 	
+	image.Destroy();
 	image.Load(resdir + "\\" + name + ".png");
 	xsize = image.GetWidth() / frames;
 	ysize = image.GetHeight();

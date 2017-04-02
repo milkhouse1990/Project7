@@ -12,11 +12,13 @@ void gimmick::effect(player *milk)
 				put_right(milk);
 			else
 				put_left(milk);
-
-		milk->sprite.y++;
-		if (sprite.damage_check(milk->sprite))
-			milk->sprite.x += vx;
-		milk->sprite.y--;
+		else
+		{
+			milk->sprite.y++;
+			if (sprite.damage_check(milk->sprite))
+				milk->sprite.x += vx;
+			milk->sprite.y--;
+		}
 		break;
 	case 2://auto recover
 		i++;

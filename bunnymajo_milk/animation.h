@@ -8,7 +8,7 @@ class animation
 public:
 	//location
 	int x;
-	int y;
+	double y;
 	CImage image;
 
 	CString name;
@@ -21,6 +21,8 @@ public:
 	int frames;
 	int period;
 
+	bool left;
+
 	animation(int gx, int gy, CString p_name, int p_period=0,int p_frames=1)
 	{
 		change(p_name,p_period,p_frames);		
@@ -32,7 +34,7 @@ public:
 	//{
 		//image.Destroy();
 	//}
-	void draw(HDC mdc, int px,int py,bool left=false);
+	void draw(HDC mdc, int px,int py);
 	void draw(HDC mdc);
 	int get_gx();
 	int get_gy();

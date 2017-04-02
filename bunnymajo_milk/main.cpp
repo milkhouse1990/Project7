@@ -331,8 +331,8 @@ void input()
 							if (!transform)
 							{
 								manimation a_new_bullet(milk.sprite.get_gx() + 1, milk.sprite.get_gy() + 1, "bullet");
-								object new_bullet(1, 10 - 20 * milk.left, 0, a_new_bullet);
-								new_bullet.left = milk.left;
+								object new_bullet(1, 10 - 20 * milk.sprite.left, 0, a_new_bullet);
+								new_bullet.sprite.left = milk.sprite.left;
 								milk_listobj.push_back(new_bullet);
 							}
 						}
@@ -341,9 +341,15 @@ void input()
 					{
 						if (!transform)
 						{
-							if (WallCheck(milk.sprite.x - tile / 2, milk.sprite.y + tile) || WallCheck(milk.sprite.x + tile / 2, milk.sprite.y + tile))
+							if (milk.ground_check())
 							{
-								milk.vy = -10;
+								if (milk.motion!=2)
+								milk.vy = -12.0*tile/FPS;
+							}
+							else if (!milk.double_jump)
+							{
+								milk.vy = -12.0*tile / FPS;
+								milk.double_jump = true;
 							}
 						}
 					}
@@ -370,7 +376,7 @@ void input()
 									{
 										if (milk.sprite.damage_check(lgi->sprite))
 										{
-											if (WallCheck(milk.sprite.x - milk.sprite.xsize / 2 + 1 + milk.sprite.ubox, milk.sprite.y - milk.sprite.hbox) || WallCheck(milk.sprite.x - milk.sprite.xsize / 2 + milk.sprite.wbox, milk.sprite.y - milk.sprite.hbox))
+											if (WallCheck(milk.sprite.get_left_border() + milk.sprite.ubox, milk.sprite.y - milk.sprite.hbox) || WallCheck(milk.sprite.x - milk.sprite.xsize / 2 + milk.sprite.wbox, milk.sprite.y - milk.sprite.hbox))
 												break;
 											else
 											{
@@ -423,12 +429,24 @@ void input()
 						}
 						else
 						{
-							if (milk.costume != 5)
+							if (milk.ground_check())
+								if (milk.costume != 5)
 							{
-								milk.motion = 2;
-								milk.sprite.mchange("milk_down", 0, 1, 20, 2 * tile, tile);
+									if (milk.sprite.left)
+									{
+										if (!milk.left_wall_check(tile))
+										{
+											milk.motion = 2;
+											milk.sprite.mchange("milk_down", 0, 1, -0.5*tile, 2 * tile, tile);
+										}
+									}
+									else
+										if (!milk.right_wall_check(tile))
+										{
+											milk.motion = 2;
+											milk.sprite.mchange("milk_down", 0, 1, -0.5*tile, 2 * tile, tile);
+										}
 							}
-
 						}
 					}
 					else if (didod[i].dwOfs == BUTTON_LEFT)
@@ -461,9 +479,15 @@ void input()
 							if (milk.costume != 5)
 							{
 								milk.motion = 0;
-								milk.sprite.mchange("rabbit", 0, 1, 4, tile, 2 * tile);
+								milk.sprite.mchange("rabbit", 0, 1, 0, tile, 2 * tile);
 							}
 						}
+					}
+					else if (didod[i].dwOfs == BUTTON_B)
+					{
+						if (!transform)
+							if (milk.vy < 0)
+								milk.vy = 0;
 					}
 				}
 			}
@@ -542,11 +566,10 @@ void input()
 			{
 				if (milk.motion != 2)
 				{
-					milk.left = true;
-					while (WallCheck(milk.sprite.x - milk.speed - milk.sprite.xsize / 2 + milk.sprite.ubox + 1, milk.sprite.y - milk.sprite.hbox + 1) || WallCheck(milk.sprite.x - milk.speed - milk.sprite.xsize / 2 + milk.sprite.ubox + 1, milk.sprite.y))
-						milk.sprite.x++;
-
-					milk.sprite.x -= milk.speed;
+					milk.turn_left(true);
+					milk.sprite.x -= milk.speed*tile/FPS;
+					while (milk.left_wall_check())
+						milk.sprite.x++;	
 
 					for (lgi = gimmick_list.begin(); lgi != gimmick_list.end(); lgi++)
 					{
@@ -561,11 +584,10 @@ void input()
 			{
 				if (milk.motion != 2)
 				{
-					milk.left = false;
-					while (WallCheck(milk.sprite.x + milk.speed - milk.sprite.xsize / 2 + milk.sprite.ubox + milk.sprite.wbox, milk.sprite.y - milk.sprite.hbox + 1) || WallCheck(milk.sprite.x + milk.speed - milk.sprite.xsize / 2 + milk.sprite.ubox + milk.sprite.wbox, milk.sprite.y))
-						milk.sprite.x--;
-
-					milk.sprite.x += milk.speed;
+					milk.turn_left(false);
+					milk.sprite.x += milk.speed*tile/FPS;
+					while (milk.right_wall_check())
+						milk.sprite.x--;			
 
 					for (lgi = gimmick_list.begin(); lgi != gimmick_list.end(); lgi++)
 					{
@@ -598,16 +620,16 @@ void update()
 			//milk move
 			//milk fall
 			milk.sprite.y += milk.vy;
-
+			milk.vy += 36.0 * tile / FPS / FPS;
 			//µØÃæ¼ì²â
-			if (WallCheck(milk.sprite.x - milk.sprite.xsize / 2 + 1 + milk.sprite.ubox, milk.sprite.y + 1) || WallCheck(milk.sprite.x - milk.sprite.xsize / 2 + 1 + milk.sprite.ubox + milk.sprite.wbox - 1, milk.sprite.y + 1))
+			if (milk.ground_check())
 			{
-				milk.sprite.y = (milk.sprite.y + 1) / tile * tile - 1;
+				milk.sprite.y = ((int)milk.sprite.y + 1) / tile * tile - 1;
 				milk.vy = 0;
+				milk.double_jump = false;
 			}
 
-			else
-				milk.vy += 1;
+				
 			for (lgi = gimmick_list.begin(); lgi != gimmick_list.end(); lgi++)
 			{
 				if (lgi->solid)
@@ -622,8 +644,6 @@ void update()
 						milk.sprite.y--;
 					lgi->effect(&milk);
 				}
-
-
 			}
 
 			//milk bullet phase
@@ -663,12 +683,12 @@ void update()
 			//event check
 			for (levi = event_list.begin(); levi != event_list.end(); levi++)
 			{
-				if (milk.sprite.x >= levi->x && milk.sprite.x <= levi->x + 64)
+				if (milk.sprite.x >= levi->x-1 && milk.sprite.x <= levi->x + tile)
 				{
 					switch (levi->id)
 					{
 					case 0:
-						milk.sprite.change("rabbit");
+						milk.sprite.mchange("rabbit");
 						boss_flag = false;
 						scene = 0;
 						LoadMap(hdc, bufdc, mapdc);
@@ -677,14 +697,14 @@ void update()
 						if (milk.costume == 7)
 						{
 							milk.costume = 0;
-							milk.sprite.change("rabbit");
+							milk.sprite.mchange("rabbit");
 						}
 						break;
 					case 2:
 						if (milk.costume == 0)
 						{
 							milk.costume = 7;
-							milk.sprite.change("milk_bathtowel");
+							milk.sprite.mchange("milk_bathtowel");
 						}
 						break;
 					case 3:
@@ -846,9 +866,9 @@ void paint()
 	//frontground draw
 	if (scene == 6)
 	{
-		animation a_shelter(10,6,"shelter");
+		animation a_shelter(8,6,"shelter");
 		a_shelter.draw(mdc);
-		animation a_shelter2(12, 6, "shelter");
+		animation a_shelter2(10, 6, "shelter");
 		a_shelter2.draw(mdc);
 	}
 	//transform select draw
@@ -879,8 +899,6 @@ void paint()
 		image.Draw(mdc, 0, yscreen-tile*4 - i, 8*j, i, 8*j, 65*j -1- i+j, 8*j, i);
 		image.Destroy();
 
-		//sprintf_s(str, "%d / %d", milk.nHp, milk.mHp);
-		//TextOut(mdc, 0, 0, str, strlen(str));
 		//boss hp
 		if (boss_flag)
 		{
@@ -909,8 +927,6 @@ void paint()
 				image.Draw(mdc, xscreen - tile, yscreen - tile * 4 - j, 8 * j, j, 8 * j, 65 * j-1, 8 * j, j);
 				
 			image.Destroy();
-			//sprintf_s(str, "%d / %d", enemy_list.begin()->nHp, enemy_list.begin()->mHp);
-			//TextOut(mdc, 1100, 400, str, strlen(str));
 		}
 		//dialogue draw
 		if (!act)
@@ -991,6 +1007,7 @@ void LoadMap(HDC hdc,HDC bufdc,HDC mapdc)
 	if (scene > 0)
 	{
 		//map
+		mapIndex.clear();
 		switch (scene)
 		{
 		case 1:
@@ -1049,12 +1066,12 @@ void LoadMap(HDC hdc,HDC bufdc,HDC mapdc)
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-				0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+				0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+				0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+				0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
 				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 			break;

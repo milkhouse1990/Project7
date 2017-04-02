@@ -9,7 +9,7 @@ public:
 	bool solid;
 	bool item;
 	
-	gimmick(int p_id, manimation p_sprite) :object(1, -5, 0, p_sprite)
+	gimmick(int p_id, manimation p_sprite) :object(1, -2, 0, p_sprite)
 	{
 		id = p_id;
 		i = 0;
