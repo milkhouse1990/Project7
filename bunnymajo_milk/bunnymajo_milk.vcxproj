@@ -79,6 +79,7 @@
     <ClCompile Include="npc.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="animation.h" />
@@ -94,6 +95,7 @@
     <ClInclude Include="enemy.h" />
     <ClInclude Include="npc.h" />
     <ClInclude Include="object.h" />
+    <ClInclude Include="ui.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

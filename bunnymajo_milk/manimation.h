@@ -3,14 +3,14 @@
 class manimation :public animation {
 public:
 	int xoffset; //x_origin-x_center
-	int ubox;
+	//int ubox;
 	int vbox;
 	int wbox;
 	int hbox; //collision box: x:ubox~ubox+wbox-1; y:vbox~vbox-hbox+1;
 
 	manimation(int gx, int gy, CString p_name, int p_period = 0, int p_frames = 1) :animation(gx, gy, p_name, p_period, p_frames)
 	{
-		ubox = 0;
+		//ubox = 0;
 		vbox = 0;
 		wbox = xsize;
 		hbox = ysize;
@@ -20,7 +20,7 @@ public:
 	{
 		x = ma.x;
 		y = ma.y;
-		ubox = ma.ubox;
+		//ubox = ma.ubox;
 		vbox = ma.vbox;
 		wbox = ma.wbox;
 		hbox = ma.hbox;
@@ -33,4 +33,5 @@ public:
 	void mchange(CString p_name, int p_period, int p_frames, int p_xoffset, int p_wbox, int p_hbox);
 	int get_gx();
 	int get_left_border();
+	int get_right_border();
 };

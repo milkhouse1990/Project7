@@ -10,21 +10,26 @@ public:
 	int costume;
 	int motion;//0:stand 1:move 2:down 3:jump 4:attack
 	int speed;
+	double g;
 	bool double_jump;
 	player(int p_hp, manimation p_sprite) :object(p_hp, 0, 0, p_sprite)
 	{
 		costume_change(0);
 		double_jump = false;
 		//timer = 0;
-		ubox = 4;
+		//ubox = 4;
 		vbox = 0;
-		
+		g= 36.0 * tile / FPS / FPS;
 	}
 	void die();
 	bool ground_check();
 	bool left_wall_check(int delta_x=0);
 	bool right_wall_check(int delta_x=0);
-	void turn_left(bool left);
 	void costume_change(int cos);
-	void physics();
+	void xphysics();
+	void yphysics();
+	//action
+	void turn_left(bool left);
+	void stop();
+	void jump();
 };

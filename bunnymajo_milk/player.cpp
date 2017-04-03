@@ -7,7 +7,7 @@ void player::die()
 
 bool player::ground_check()
 {
-	int dx = x - xoffset - xsize / 2 + 1 + ubox;
+	int dx = get_left_border();
 	int i;
 	for (i=0;i<wbox/tile;i++)
 	{
@@ -22,8 +22,8 @@ bool player::ground_check()
 
 bool player::left_wall_check(int delta_x)
 {
-	int temp_x = x - delta_x;
-	int dx = temp_x - xoffset - xsize / 2 + 1 + ubox;
+	int dx = get_left_border();
+	dx-=delta_x;
 	int dy = y;
 	int i;
 	for (i = 0; i < hbox / tile; i++)
@@ -39,8 +39,8 @@ bool player::left_wall_check(int delta_x)
 
 bool player::right_wall_check(int delta_x)
 {
-	int temp_x=x + delta_x;
-	int dx = temp_x - xoffset - xsize / 2 + ubox + wbox;
+	int dx = get_right_border();
+	dx+= delta_x;
 	int dy = y;
 	int i;
 	for (i = 0; i < hbox / tile; i++)
@@ -61,6 +61,8 @@ void player::turn_left(bool p_left)
 		left = p_left;
 		xoffset = -xoffset;
 	}
+	motion = 1;
+	mchange("milk_walk");
 }
 
 void player::costume_change(int cos)
@@ -92,8 +94,28 @@ void player::costume_change(int cos)
 	}
 }
 
-void player::physics()
+void player::xphysics()
+{
+	x += vx;
+}
+void player::yphysics()
 {
 	y += vy;
-	vy += 36.0 * tile / FPS / FPS;
+	if (y < 9 * tile&&vy == 0)
+	{
+		int i = 0;
+	}
+	vy += g; 
+	
+}
+
+void player::stop()
+{
+	vx = 0;
+	motion = 0;
+}
+
+void player::jump()
+{
+	vy = -12.0*tile / FPS;// +0.5*g;
 }

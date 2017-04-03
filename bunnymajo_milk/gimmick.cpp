@@ -41,9 +41,9 @@ void gimmick::effect(player *milk)
 
 void gimmick::put_right(player *milk)
 {
-	milk->x = x -xsize/2 + ubox + wbox - milk->ubox + milk->xsize / 2;
+	milk->x = get_left_border()-1 + wbox + milk->wbox / 2+milk->xoffset;
 }
 void gimmick::put_left(player *milk)
 {
-	milk->x = x - xsize / 2 -milk->wbox- milk->ubox + milk->xsize / 2;
+	milk->x = get_left_border()-1 -milk->wbox + milk->wbox / 2+milk->xoffset;
 }

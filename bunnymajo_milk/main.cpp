@@ -22,6 +22,7 @@
 #include "event.h"
 
 #include"menu.h"
+#include"ui.h"
 
 #include"avg_engine.h"
 #include"keyconfig.h"
@@ -30,11 +31,20 @@ using namespace std;
 
 #define DINPUT_BUFFERSIZE 16
 
+//720p
+const int xscreen = 1280, yscreen = 720;
+const int disp_xscreen = 1280, disp_yscreen = 720;
+const int tile = 64;
+const int FPS = 60;
+CString resdir = "Res";
+
+/*
 const int xscreen = 320, yscreen = 180;
+const int disp_xscreen = 640, disp_yscreen = 360;
 const int tile = 16;
 const int FPS = 60;
 CString resdir = "Res180p";
-
+*/
 //全局变量声明
 
 HINSTANCE hInst;
@@ -259,7 +269,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	HBITMAP bmp;
 	hInst = hInstance;
 
-	hWnd = CreateWindow("canvas", "Test", WS_OVERLAPPEDWINDOW,
+	hWnd = CreateWindow("canvas", "ウサミミミルクちゃん", WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
 
 	if (!hWnd)
@@ -267,7 +277,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		return FALSE;
 	}
 
-	MoveWindow(hWnd, 0, 0, xscreen*2, yscreen*2+GetSystemMetrics(SM_CYCAPTION), true);
+	MoveWindow(hWnd, 0, 0, disp_xscreen, disp_yscreen+GetSystemMetrics(SM_CYCAPTION), true);
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 
@@ -348,12 +358,12 @@ void input()
 						{
 							if (milk.ground_check())
 							{
-								if (milk.motion!=2)
-								milk.vy = -12.0*tile/FPS;
+								if (milk.motion != 2)
+									milk.jump();
 							}
 							else if (!milk.double_jump)
 							{
-								milk.vy = -12.0*tile / FPS;
+								milk.jump();
 								milk.double_jump = true;
 							}
 						}
@@ -379,7 +389,7 @@ void input()
 									{
 										if (milk.damage_check((manimation)*lgi))
 										{
-											if (WallCheck(milk.get_left_border() + milk.ubox, milk.y - milk.hbox) || WallCheck(milk.get_left_border() - 1 + milk.wbox, milk.y - milk.hbox))
+											if (WallCheck(milk.get_left_border(), milk.y - milk.hbox) || WallCheck(milk.get_left_border() - 1 + milk.wbox, milk.y - milk.hbox))
 											{
 
 											}
@@ -468,6 +478,7 @@ void input()
 				}
 				else
 				{
+					//release input
 					if (didod[i].dwOfs == BUTTON_DOWN)
 					{
 						if (transform)
@@ -488,6 +499,22 @@ void input()
 						if (!transform)
 							if (milk.vy < 0)
 								milk.vy = 0;
+					}
+					else if (didod[i].dwOfs == BUTTON_LEFT)
+					{
+						if (!transform)
+						{
+							milk.stop();
+						}
+							
+					}
+					else if (didod[i].dwOfs == BUTTON_RIGHT)
+					{
+						if (!transform)
+						{
+							milk.stop();
+						}
+							
 					}
 				}
 			}
@@ -567,17 +594,7 @@ void input()
 				if (milk.motion != 2)
 				{
 					milk.turn_left(true);
-					milk.x -= milk.speed*tile/FPS;
-					while (milk.left_wall_check())
-						milk.x++;	
-
-					for (lgi = gimmick_list.begin(); lgi != gimmick_list.end(); lgi++)
-					{
-						if (lgi->solid)
-							if (milk.damage_check((manimation)*lgi))
-								lgi->put_right(&milk);
-					}
-					//milk.name = "rabbit2";
+					milk.vx =-milk.speed*tile/FPS;
 				}
 			}
 			else if (g_pKeyStateBuffer[BUTTON_RIGHT] & 0x80)
@@ -585,16 +602,7 @@ void input()
 				if (milk.motion != 2)
 				{
 					milk.turn_left(false);
-					milk.x += milk.speed*tile/FPS;
-					while (milk.right_wall_check())
-						milk.x--;			
-
-					for (lgi = gimmick_list.begin(); lgi != gimmick_list.end(); lgi++)
-					{
-						if (lgi->solid)
-							if (milk.damage_check((manimation)*lgi))
-								lgi->put_left(&milk);
-					}
+					milk.vx = milk.speed*tile/FPS;
 				}
 			}
 			//else
@@ -618,8 +626,8 @@ void update()
 			if (milk.invincible > 0)
 				milk.invincible--;
 			//milk move
-			//milk fall
-			milk.physics();
+			
+			milk.yphysics();	
 			
 			//地面检测
 			if (milk.ground_check())
@@ -627,9 +635,11 @@ void update()
 				milk.y = ((int)milk.y + 1) / tile * tile - 1;
 				milk.vy = 0;
 				milk.double_jump = false;
+				if (milk.motion==0)
+				if (milk.name != "rabbit")
+					milk.mchange("rabbit");
 			}
-
-				
+							
 			for (lgi = gimmick_list.begin(); lgi != gimmick_list.end(); lgi++)
 			{
 				if (lgi->solid)
@@ -644,6 +654,35 @@ void update()
 						milk.y--;
 					lgi->effect(&milk);
 				}
+			}
+
+			milk.xphysics();
+			//right wall check
+			while (milk.right_wall_check())
+			{
+				milk.x--;
+				milk.vx = 0;
+			}
+			for (lgi = gimmick_list.begin(); lgi != gimmick_list.end(); lgi++)
+			{
+				if (lgi->solid)
+					if (milk.damage_check((manimation)*lgi))
+					{
+						lgi->put_left(&milk);
+						milk.vx = 0;
+					}
+			}
+			//left wall check
+			while (milk.left_wall_check())
+			{
+				milk.x++;
+				milk.vx = 0;
+			}
+			for (lgi = gimmick_list.begin(); lgi != gimmick_list.end(); lgi++)
+			{
+				if (lgi->solid)
+					if (milk.damage_check((manimation)*lgi))
+						lgi->put_right(&milk);
 			}
 
 			//milk bullet phase
@@ -779,11 +818,7 @@ void update()
 		if (!selector)
 			act = avg.step();
 	}
-}
-void paint()
-{
-	char str[100];
-	//---------------------------------------------------DRAW
+
 	//camera
 	if (roll == 0)
 	{
@@ -793,22 +828,25 @@ void paint()
 			xview = milk.x - xscreen / 2;
 		//bounder check
 		if (milk.x < 0)
-			milk.x=0;
+			milk.x = 0;
 	}
-	
+
 	if (milk.y > yscreen)
 	{
 		milk.die();
 		LoadMap(hdc, bufdc, mapdc);
 	}
-	if (roll==1)
+	if (roll == 1)
 		if (milk.x < xview)
 		{
 			milk.die();
 			LoadMap(hdc, bufdc, mapdc);
 		}
+}
+void paint()
+{
+	char str[100];
 
-	CImage image;
 	//npc draw
 	for (lni = npc_listnpc.begin(); lni != npc_listnpc.end(); ++lni)
 	{
@@ -880,45 +918,17 @@ void paint()
 		////animation a_face("face");
 		//a_face.draw(mdc, 0, 720 - 256);
 		//hp
-		image.Load(resdir+"\\life.png");
-		int i,j;
-		j = tile / 16;
-		i = milk.mHp;
-		i = i * j*2;
-		image.Draw(mdc, 0, yscreen - tile*4 - i- j, 8*j, i, 0, 0, 8*j, i);
-		i = milk.nHp;
-		i = i * j*2;
-		image.Draw(mdc, 0, yscreen-tile*4 - i, 8*j, i, 8*j, 65*j -1- i+j, 8*j, i);
-		image.Destroy();
-
+		draw_hp_gauge(mdc, 0, yscreen - tile * 4, milk.nHp, milk.mHp);
+		
 		//boss hp
 		if (boss_flag)
 		{
-			image.Load(resdir + "\\life.png");
-			i = 32;
-			i = i * j * 2;
-			image.Draw(mdc, xscreen-tile, yscreen - tile * 4 - i - j, 8 * j, i, 0, 0, 8 * j, i);
 			if (enemy_list.size() != 0)
 			{
-				i = enemy_list.begin()->nHp;
-
-				if (i > 32)
-				{
-					image.Draw(mdc, xscreen - tile, yscreen - tile * 4 - 32 * j * 2, 8 * j, 32 * j * 2, 8 * j, 65 * j - 1 - 32 * j * 2 + j, 8 * j, 32 * j * 2);
-					i -= 32;
-					i = i*j * 2;
-					image.Draw(mdc, xscreen - tile, yscreen - tile * 4 - i, 8 * j, i, 16 * j, 65 * j - 1 - i + j, 8 * j, i);
-				}
-				else
-				{
-					i = i * j * 2;
-					image.Draw(mdc, xscreen - tile, yscreen - tile * 4 - i, 8 * j, i, 8 * j, 65 * j - 1 - i + j, 8 * j, i);
-				}
+				draw_hp_gauge(mdc, xscreen - tile, yscreen - tile * 4, enemy_list.begin()->nHp, enemy_list.begin()->mHp);
 			}
 			else
-				image.Draw(mdc, xscreen - tile, yscreen - tile * 4 - j, 8 * j, j, 8 * j, 65 * j-1, 8 * j, j);
-				
-			image.Destroy();
+				draw_hp_gauge(mdc, xscreen - tile, yscreen - tile * 4, 0, 64);				
 		}
 		//dialogue draw
 		if (!act)
@@ -935,9 +945,15 @@ void paint()
 	float fp = GetFPS();
 	sprintf_s(str, "FPS: %f", fp);
 	TextOut(mdc, 0, 0, str, strlen(str));
+
+	//debug
+	sprintf_s(str, "vy: %f", milk.vy);
+	TextOut(mdc, 0, tile, str, strlen(str));
+	sprintf_s(str, "y: %f", milk.y);
+	TextOut(mdc, 0, tile*2, str, strlen(str));
 	//display
 	//SelectObject(mdc, bmp);
-	StretchBlt(hdc, 0, 0, xscreen*2, yscreen*2, mdc, 0, 0, xscreen, yscreen, SRCCOPY);
+	StretchBlt(hdc, 0, 0, disp_xscreen, disp_yscreen, mdc, 0, 0, xscreen, yscreen, SRCCOPY);
 	}
 
 bool WallCheck(int x, int y)
@@ -1265,6 +1281,7 @@ void LoadMap(HDC hdc,HDC bufdc,HDC mapdc)
 		milk.x = 0;
 		milk.y = 0;
 		milk.costume = 0;
+		milk.vx = 0;
 		//camera reset
 		xview = 0;
 	}	

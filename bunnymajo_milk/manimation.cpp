@@ -42,6 +42,7 @@ void manimation::mchange(CString p_name, int p_period, int p_frames, int p_xoffs
 	xoffset = p_xoffset;
 	if (left)
 		xoffset = -xoffset;
+	//ubox = (xsize - wbox) / 2;
 	wbox = p_wbox;
 	hbox = p_hbox;
 }
@@ -53,6 +54,14 @@ int manimation::get_gx()
 }
 int manimation::get_left_border()
 {
+	int ubox= (xsize - wbox) / 2;
 	int dx = x - xoffset - xsize / 2 + 1 + ubox;
+	//dx=x-xoffset-wbox/2+1
+	return dx;
+}
+
+int manimation::get_right_border()
+{
+	int dx = x - xoffset + wbox / 2;
 	return dx;
 }
