@@ -35,7 +35,7 @@ using namespace std;
 const int xscreen = 1280, yscreen = 720;
 const int disp_xscreen = 1280, disp_yscreen = 720;
 const int tile = 64;
-const int FPS = 60;
+const int FPS =60;
 CString resdir = "Res";
 
 /*
@@ -211,7 +211,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 			input();
 			update();
 			paint();
-			while (timeGetTime() - timeBegin < 16)
+			while (timeGetTime() - timeBegin < 15)
 			{
 			}
 			timeBegin = timeGetTime();
@@ -223,7 +223,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 }
 
 //***设计一个窗口类，类似填空题，使用窗口结构体*************************  
-ATOM MyRegisterClass(HINSTANCE hInstance)
+ATOM MyRegisterClass(HINSTANCE hInstance)                                                                              
 {
 	WNDCLASSEX wcex;
 
@@ -635,10 +635,13 @@ void update()
 				milk.y = ((int)milk.y + 1) / tile * tile - 1;
 				milk.vy = 0;
 				milk.double_jump = false;
-				if (milk.motion==0)
-				if (milk.name != "rabbit")
-					milk.mchange("rabbit");
+				if (milk.motion == 0)
+					if (milk.name != "milk")
+						milk.mchange("milk");
 			}
+			else if (milk.vy > 0)
+				if (milk.name != "milk_fall")
+					milk.mchange("milk_fall");
 							
 			for (lgi = gimmick_list.begin(); lgi != gimmick_list.end(); lgi++)
 			{
