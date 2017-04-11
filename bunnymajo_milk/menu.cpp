@@ -78,5 +78,5 @@ void menu::draw(HDC mdc)
 	
 	vector.draw(mdc,x-tile,y-5+10*index);
 	rectangle.draw(mdc,x-tile,y-7);
-	logo.draw(mdc);
+	//logo.draw(mdc);
 }

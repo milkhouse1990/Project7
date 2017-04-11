@@ -51,7 +51,7 @@ HINSTANCE hInst;
 HBITMAP bg, game,rabbit,fullmap,bmp;
 HDC     hdc, mdc, bufdc,mapdc;
 HWND    hWnd;
-DWORD timeBegin = timeGetTime();
+ULONGLONG timeBegin = GetTickCount64();
 ULONGLONG   tPre, tNow,tStart,n=0;
 int     f, txtNum;
 bool    attack, over, act, transform = false, trans_finish = false, boss_flag = false, selector;
@@ -211,10 +211,11 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 			input();
 			update();
 			paint();
-			while (timeGetTime() - timeBegin < 15)
+			
+			while ((tNow=GetTickCount64()) - timeBegin < 15)
 			{
 			}
-			timeBegin = timeGetTime();
+			timeBegin = tNow;
 		}
 	}
 	g_pKeyboardDevice->Unacquire();
